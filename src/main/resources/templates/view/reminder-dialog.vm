@@ -1,0 +1,166 @@
+<html>
+<head>
+  <title>$title</title>
+  <meta name="decorator" content="atl.general"/>
+
+    #disable_html_escaping()
+    $webResourceManager.requireResource(
+        "com.jira.plugins.jira-reminder:reminder-web-resources" )
+</head>
+<body>
+
+<div id="visibleFieldNamesJson" name="visibleFieldNamesJson"
+     style="display:none;">${visibleFieldNamesJson}</div>
+<div id="visibleFunctionNamesJson" name="visibleFunctionNamesJson"
+     style="display:none;">${visibleFunctionNamesJson}</div>
+<div id="jqlReservedWordsJson" name="jqlReservedWordsJson"
+     style="display:none;"> ${jqlReservedWordsJson} </div>
+    #if ($action.isInlineDialogMode())
+        #set($contentClass = "")
+        #set($cancelUrl = "#")
+    #else
+        #set($contentClass = "aui-panel")
+    #end
+<div class="${contentClass}">
+
+  <h3 class="formtitle">$title</h3>
+
+    #if ($action.getErrors().containsKey("access"))
+        #AUImessage("error" "" $action.getErrors().get("access") "" "" "" "false")
+    #else
+
+        #if ($successMessage)
+            #AUImessage("success" "" $successMessage "" "" "" "false")
+        #end
+        #if ($errorMessage)
+            #AUImessage("error" "" $errorMessage "" "" "" "false")
+        #end
+
+      <form action="${baseurl}/secure/IssueReminderAction.jspa?id=${issue.getId()}" method="post"
+            class="aui reminder-reminder-form">
+
+        <input type="hidden" name="atl_token" value="$atl_token" />
+        <div class="form-body">
+
+          <div class="reminder-date">
+              #customControlHeader($action "reminderdate" $action.getText(
+                  "reminder.jira.action.date") false $!displayParameters {
+                  "controlHeaderClass": "aui-field-datepicker"})
+            <input type="text" class="text medium-field" id="reminderdate" name="reminderdate"
+                   value="$textutils.htmlEncode(${reminderdate})"/>
+            <a href="#" id="reminderdate-trigger"
+               title="$action.getText('date.picker.select.date')"
+               tabindex="-1">
+              <span class="aui-icon icon-date">$i18n.getText('date.picker.select.date')</span>
+            </a>
+              #datePopup("reminderdate"
+                  "reminderdate-trigger" $dateTimeFormat $dateFormat $timeFormat $dateTimePicker $currentMillis $currentCalendar)
+            <input class="text time-field timepicker" id="remindertime" name="remindertime"
+                   type="text" value="${remindertime}"/>
+              #customControlFooter($action "reminderdate" "" $!displayParameters $auiparams)
+          </div>
+
+          <div class="reminder-additional-recipients">
+            <label for="additionalrecipients">Дополнительные участники <div class="small-description">Создатель включен по умолчанию</div></label>
+            <select id="additionalrecipients" multiple class="multiple-user-picker"
+                    name="additionalrecipients" data-user-type="additionalrecipients">
+                #if ($additionalrecipients)
+                    #foreach ($additionalrecipient in $additionalrecipients)
+                      <option value="$additionalrecipient" title="$additionalrecipient"
+                              selected>$additionalrecipient
+                      </option>
+                    #end
+                #end
+            </select>
+          </div>
+
+          <div class="reminder-additional-recipients">
+            <label for="groups">Группа <div class="small-description">Все пользователи из группы будут оповещены</div></label>
+            <div>
+              <select id="groups" name="groups" data-user-type="groups" multiple="multiple">
+                  #if ($groups)
+                      #foreach ($group in $groups)
+                        <option value="$group" title="$group"
+                                selected>$group
+                        </option>
+                      #end
+                  #end
+              </select>
+            </div>
+          </div>
+
+          <div class="reminder-condition">
+            <label for="reminder-message">Условие</label>
+            <div class="search-field-container">
+              <div class="atlassian-autocomplete">
+                <label for="elementId">
+                  <span
+                      style="left: 10px!important;top: 10px!important;position: absolute!important;display: none"
+                      class="icon jqlgood js-jql-autocomplete-error"
+                      id="jqlerrormsg-reminderJqlcond"
+                      title=""></span>
+                </label>
+                <textarea rows="6" maxlength="440" cols="67"
+                          style="min-width: 100%; margin-bottom: 20px; padding: 5px 0 5px 28px; height: 65px; font-size: 14px; font-family: Arial,sans-serif;"
+                          id="reminderJqlcond"
+                          name="reminderJqlcond"
+                          class="calendar-config-textarea js-jql-autocomplete-field textarea"
+                          autocomplete="off">#if (${reminderJqlcond}) ${reminderJqlcond} #end</textarea>
+              </div>
+            </div>
+
+            #if($privateReminder == "true")
+              <div class="reminder-additional-recipients">
+                <input type="checkbox" checked class="checkbox" id="privateReminder" name="privateReminder"
+                       value="true">
+                <label for="assignee">Приватный <span
+                    class="small-description" style="font-size: 12px;">(виден только получателям) </span></label>
+              </div>
+            #else
+              <div class="reminder-additional-recipients">
+                <input type="checkbox" class="checkbox" id="privateReminder" name="privateReminder"
+                       value="false">
+                <label for="assignee"><span
+                    class="small-description" style="font-size: 12px;">(доступно только участникам) </span></label>
+              </div>
+            #end
+          </div>
+
+          <div class="reminder-text">
+              ## see JIRA's edit-textarea.vm and description-edit.vm
+              <label for="reminder-message">Сообщение</label>
+            #set( $rendererParams = {"rows": "5", "cols": "10", "wrap": "virtual"} )
+            #if ($mentionable)
+              $!rendererParams.put("mentionable", true)
+              #if ($issue.project.key && $issue.project.key != "")
+                  $!rendererParams.put("data-projectkey", "$!issue.project.key")
+              #end
+              #if ($issue.key && $issue.key != "")
+                  $!rendererParams.put("data-issuekey", "$!issue.key")
+              #end
+          #end
+            #set( $editVMHtml = $rendererDescriptor.getEditVM($!reminderText, $!issue.key, $rendererType,
+              "reminderText", $i18n.getText(
+                  "reminder.jira.action.text"), $rendererParams, false) )
+            $!editVMHtml
+          </div>
+        </div>
+
+        <div class="buttons-container form-footer">
+          <div class="buttons">
+              #if (${action.returnUrl})
+                <input type="hidden" name="returnUrl" value="${action.returnUrl}"/>
+                <input type="hidden" name="reminderId" value="${reminderId}"/>
+              #end
+            <input type="hidden" name="action" value="submit"/>
+            <input class="button aui-button aui-button-primary submit" type="submit" id="save"
+                   value="$action.getText('AUI.form.submit.button.text')"/>
+            <a class="cancel" href="${cancelUrl}">$action.getText("AUI.form.cancel.link.text")</a>
+          </div>
+        </div>
+
+      </form>
+    #end
+</div>
+</body>
+</html>

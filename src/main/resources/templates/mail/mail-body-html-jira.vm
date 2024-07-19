@@ -1,0 +1,49 @@
+#macro (header $columns)
+    <thead>
+        <tr class="rowHeader">
+        #foreach ($column in $columns)
+            #set ($field = $column.navigableField)
+            #if ($column.headerHtml)
+                <th id="col-header-${field.id}" class="colHeaderLink">
+                    $column.headerHtml
+                </th>
+            #else
+                <th class="colHeaderLink headerrow-${field.id}">
+                    $textutils.htmlEncode($i18n.getText($column.columnHeadingKey))
+                </th>
+            #end
+        #end
+        </tr>
+    </thead>
+#end
+#macro (issue $issue $columns $celldisplayparams)
+    <tr id="issuerow${issue.id}" rel="${issue.id}" data-issuekey="${issue.key}" class="issuerow">
+    #foreach ($column in $columns)
+        #set($cell = $column.getHtml($celldisplayparams, $issue))
+        <td class="${column.navigableField.columnCssClass}">${cell}</td>
+    #end
+    </tr>
+#end
+##disable_html_escaping()
+
+#parse("templates/email/html/includes/header.vm")
+
+    #titleHeader("Reminder")
+
+    #rowWrapperNormalBegin()
+        #set( $intro = "<br>Created by ${user.getDisplayName()}. " )
+        #textParagraph($intro)
+    #rowWrapperNormalEnd()
+
+    #rowWrapperNormalBegin()
+        <table id="issuetable" border="0" cellpadding="2" cellspacing="0" width="100%">
+            #header ($layout.columns)
+            <tbody>
+            #foreach ($issue in $issues)
+                #issue($issue $layout.columns $layout.cellDisplayParams)
+            #end
+            </tbody>
+        </table>
+    #rowWrapperNormalEnd()
+
+#parse("templates/email/html/includes/footer.vm")

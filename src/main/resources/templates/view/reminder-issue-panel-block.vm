@@ -1,0 +1,88 @@
+#disable_html_escaping()
+<div id="aui-message-bar"></div>
+
+<div class="ghx-container">
+  <div id="visibleFieldNamesJson" name="visibleFieldNamesJson"
+       style="display:none;">${visibleFieldNamesJson}</div>
+  <div id="visibleFunctionNamesJson" name="visibleFunctionNamesJson"
+       style="display:none;">${visibleFunctionNamesJson}</div>
+  <div id="jqlReservedWordsJson" name="jqlReservedWordsJson"
+       style="display:none;">${jqlReservedWordsJson}</div>
+
+  <div class="add-new-reminder"><a
+      class="add-new-reminder-button aui-button reminder-trigger-dialog"
+      href="${baseurl}/secure/IssueReminderAction.jspa?id=${issue.id}">${i18n.getText(
+      'reminder.jira.create.new.reminder.label')}</a></div>
+    #foreach ($reminder in $reminders)
+        #if ("$!reminder.reminderdate" != "")
+          <ul class="reminder-block item-details" id="reminder${reminder.id}" style="border: 2px solid #007BFF; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background-color: #f8f9fa; margin-bottom: 5px;">
+            <li>
+              <dl class="dates">
+                <dd class="date">
+                <span data-name="${i18n.getText('reminder.jira.date-panel.label')}"
+                      id="reminderdate-panel-date" title="${reminder.reminderdateIso8601}">
+
+                    #if($reminder.allowEdit)
+                        <a class="reminder-trigger-dialog"
+                           href="${baseurl}/secure/IssueReminderAction.jspa?id=${issue.id}&reminderId=${reminder.id}">
+                            <time
+                                datetime="${reminder.reminderdateIso8601}">${reminder.reminderdateHtml}</time>
+                        </a>
+                    #else
+                      <div class="reminder-trigger-dialog">
+                            <time
+                                datetime="${reminder.reminderdateIso8601}">${reminder.reminderdateHtml}</time>
+                       </div>
+                    #end
+
+                </span>
+                    #if($reminder.allowEdit)
+                      <a href="#" reminderId="${reminder.id}" operation="delete"
+                         id="delete-reminder" class="icon icon-delete"
+                         title="${i18n.getText('reminder.jira.reminder.delete.title')}"></a>
+                    #end
+                </dd>
+              </dl>
+            </li>
+            <li>
+              <dl>
+                <dd>
+                  <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Создал:</span> ${reminder.createDisplayName}
+                </dd>
+              </dl>
+            </li>
+              #if ("$!reminder.reminderText" != "")
+                <li>
+                  <dl>
+                    <dd>
+                        <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Сообщение:</span> ${reminder.reminderTextHtml}
+                    </dd>
+                  </dl>
+                </li>
+              #end
+                #if ("$!reminder.additionalRecipients" != "")
+                    <li>
+                        <dl>
+                            <dd>
+                                <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Участники:</span> ${reminder.additionalRecipients}
+                            </dd>
+                        </dl>
+                    </li>
+                #end
+                #if ("$!reminder.groups" != "")
+                    <li>
+                        <dl>
+                            <dd>
+                                <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Группы:</span> ${reminder.groups}
+                            </dd>
+                        </dl>
+                    </li>
+                #end
+          </ul>
+        #else
+          <p class="ghx-fa">$i18n.getText("reminder.jira.no-date-set")</p>
+        #end
+    #end
+</div>
+$webResourceManager.requireResource(
+    "com.jira.plugins.jira-reminder:reminder-web-resources" )

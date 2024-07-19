@@ -1,0 +1,115 @@
+<html>
+<head>
+    <title>$action.getText("reminder.jira.view.reminders.label")</title>
+    <meta name="decorator" content="atl.general"/>
+    $webResourceManager.requireResource(
+        "com.jira.plugins.jira-reminder:reminder-web-resources" )
+    <style>
+        #footer {
+            display: none;
+        }
+    </style>
+</head>
+<body style="padding: 40px">
+
+<div id="aui-message-bar" style="position: absolute"></div>
+
+    #if ($action.isInlineDialogMode())
+        #set($contentClass = "")
+        #set($cancelUrl = "#")
+    #else
+        #set($contentClass = "aui-panel")
+        #set($cancelUrl = "${baseurl}")
+    #end
+<div class="${contentClass}" style="padding: 50px">
+
+    <h3 class="formtitle" style="margin-bottom: 20px;">$action.getText(
+        "reminder.jira.view.reminders.label")
+        <a class="button"
+                         style="font-size: 16px; margin-left: 13px; padding: 30px"
+                         href="#" operation="deleteAll"
+                         id="delete-reminder"
+                         title="${i18n.getText(
+                             'reminder.jira.reminder.delete.title')}">Удалить все оповещения</a>
+    </h3>
+
+    #if ($action.getErrors().containsKey("login.required"))
+        <div class="aui-message error"><span class="aui-icon icon-error"></span>
+            $action.getErrors().get("login.required")
+        </div>
+    #else
+
+    ## These messages will only display in non-inlineDialogMode
+        #if ($successMessage)
+            <div class="aui-message success"><span class="aui-icon icon-success"></span>
+                $successMessage
+            </div>
+        #end
+        #if ($errorMessage)
+            <div class="aui-message error"><span class="aui-icon icon-error"></span>
+                $errorMessage
+            </div>
+        #end
+
+    #end
+
+    #foreach ($reminder in $reminders)
+        <ul class="reminder-block item-details" id="reminder${reminder.id}" style="border: 2px solid #007BFF; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background-color: #f8f9fa; margin-bottom: 5px;">
+            <li>
+                <dl class="dates">
+                    <dd class="date">
+                <span data-name="${i18n.getText('reminder.jira.date-panel.label')}"
+                      id="reminderdate-panel-date" title="${reminder.reminderdateIso8601}">
+                    <a class="reminder-trigger-dialog"
+                       href="${baseurl}/secure/IssueReminderAction.jspa?id=${reminder.issueId}&reminderId=${reminder.id}">
+                        <time
+                                datetime="${reminder.reminderdateIso8601}">${reminder.reminderdateHtml}</time>
+                    </a>
+                </span>
+
+                        <a href="#" reminderId="${reminder.id}" operation="delete"
+                           id="delete-reminder" class="icon icon-delete"
+                           title="${i18n.getText('reminder.jira.reminder.delete.title')}"></a>
+                    </dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dd>
+                        <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Задача:</span> <a href="${baseUrl}/browse/${reminder.issueKey}"> ${reminder.issueKey}</a>
+                    </dd>
+                </dl>
+            </li>
+            #if ("$!reminder.reminderText" != "")
+                <li>
+                    <dl>
+                        <dd>
+                            <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Сообщение:</span> ${reminder.reminderTextHtml}
+                        </dd>
+                    </dl>
+                </li>
+            #end
+            #if ("$!reminder.additionalRecipients" != "")
+                <li>
+                    <dl>
+                        <dd>
+                            <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Участники:</span> ${reminder.additionalRecipients}
+                        </dd>
+                    </dl>
+                </li>
+            #end
+            #if ("$!reminder.groups" != "")
+                <li>
+                    <dl>
+                        <dd>
+                            <span style="font-weight: bold; font-size: 0.95em; color: #0056b3;">Группы:</span> ${reminder.groups}
+                        </dd>
+                    </dl>
+                </li>
+            #end
+        </ul>
+    #end
+    <div class="no-reminders-message" style="display: none">No Reminders</div>
+</div>
+</body>
+</html>

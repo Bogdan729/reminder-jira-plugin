@@ -1,0 +1,116 @@
+<atlassian-plugin key="com.reminder.jira.plugin" name="JIRA Reminder" plugins-version="2">
+    <plugin-info>
+        <version>1.0.0</version>
+        <vendor name="Kozhukhov Bogdan"/>
+        <param name="plugin-icon">images/icon16.png</param>
+        <param name="plugin-logo">images/icon144.png</param>
+    </plugin-info>
+    <resource type="i18n" name="i18n" location="i18n/i18n"/>
+    <component-import key="schedulerService" interface="com.atlassian.scheduler.SchedulerService"/>
+    <component key="job-starter" class="com.reminder.jira.plugin.job.JobStarter" public="true">
+        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
+    </component>
+    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties"/>
+    <component-import key="ao" name="Active Objects service"
+                      interface="com.atlassian.activeobjects.external.ActiveObjects"/>
+    <component key="tx-processor" name="Transactional Annotation Processor" class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor"/>
+    <component key="reminder-service" name="Reminder-Service" class="com.reminder.jira.plugin.service.impl.AOReminderServiceImpl">
+        <interface>com.reminder.jira.plugin.service.AOReminderService</interface>
+    </component>
+    <component key="jirauser-service" name="JiraUser-Service" class="com.reminder.jira.plugin.service.impl.JiraUserServiceImpl">
+        <interface>com.reminder.jira.plugin.service.JiraUserService</interface>
+    </component>
+    <web-resource key="reminder-web-resources" name="Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <dependency>jira.webresources:jqlautocomplete</dependency>
+        <transformation extension="js">
+            <transformer key="jsI18n"/>
+        </transformation>
+        <resource type="download" name="main.css" location="/css/main.css"/>
+        <resource type="download" name="main.js" location="/js/main.js"/>
+        <resource type="download" name="myReminders.js" location="/js/myReminders.js"/>
+        <resource type="download" name="jquery.timepicker.js" location="/js/libs/jquery.timepicker.js"/>
+        <resource type="download" name="jquery.timepicker.css" location="/js/libs/jquery.timepicker.css"/>
+        <resource type="download" name="images/" location="/images"/>
+        <context>jira.view.issue</context>
+    </web-resource>
+    <web-section key="operations-reminder" name="Reminder Section" location="opsbar-operations" weight="42"></web-section>
+    <web-item key="operation-link" name="Reminder Operation Link" section="operations-reminder" weight="10">
+        <label key="reminder.jira.action.link.label"/>
+        <link linkId="reminder-operation">/secure/IssueReminderAction.jspa?id=$issueId
+        </link>
+        <tooltip key="reminder.jira.action.link.tooltip"/>
+        <styleClass>reminder-trigger-dialog</styleClass>
+    </web-item>
+    <webwork1 key="operation-dialog" name="IssueReminderAction Dialog" class="java.lang.Object">
+        <description key="reminder.jira.action.description"/>
+        <actions>
+            <action name="com.reminder.jira.plugin.action.IssueReminderAction" alias="IssueReminderAction">
+                <view name="success">/templates/view/reminder-dialog.vm</view>
+                <view name="error">/templates/view/reminder-dialog.vm</view>
+                <command name="deleteReminder" alias="DeleteReminder">
+                    <view name="issuenotfound">/secure/views/issuenotfound.jsp</view>
+                    <view name="permissionviolation">/secure/views/permissionviolation.jsp</view>
+                </command>
+            </action>
+        </actions>
+    </webwork1>
+    <web-panel key="reminder-date-panel" name="Date Panel on the View Issue Screen" location="atl.jira.view.issue.right.context" weight="41">
+        <context-provider class="com.reminder.jira.plugin.ReminderIssueBlockContextProvider"/>
+        <resource name="view" type="velocity" location="/templates/view/reminder-issue-panel-block.vm"/>
+        <label key="reminder.jira.date-panel.label"/>
+    </web-panel>
+    <web-item key="settings-link" name="Settings Link" section="system.user.options/personal" weight="10">
+        <label key="reminder.jira.my.reminders.label"/>
+        <link linkId="reminder-settings">/secure/MyReminders.jspa</link>
+        <tooltip key="reminder.jira.my.reminders.label"/>
+    </web-item>
+    <webwork1 key="settings" name="Settings Dialog" class="java.lang.Object">
+        <description key="reminder.jira.settings.dialog.description"/>
+        <actions>
+            <action name="com.reminder.jira.plugin.action.MyRemindersAction" alias="MyReminders" roles-required="use">
+                <view name="success">/templates/view/my-reminders.vm</view>
+                <view name="error">/templates/view/my-reminders.vm</view>
+            </action>
+        </actions>
+    </webwork1>
+    <web-item key="management-link" name="Management Link" section="system.user.options/personal" weight="10">
+        <label key="reminder.jira.reminders.management.label"/>
+        <link linkId="reminder-management">/secure/ManageReminders.jspa</link>
+        <tooltip key="reminder.jira.reminders.management.label"/>
+    </web-item>
+    <webwork1 key="management" name="Management Dialog" class="java.lang.Object">
+        <description key="reminder.jira.management.dialog.description"/>
+        <actions>
+            <action name="com.reminder.jira.plugin.action.ManageReminderAction" alias="ManageReminders" roles-required="use">
+                <view name="success">/templates/view/manage-reminders.vm</view>
+                <view name="error">/templates/view/manage-reminders.vm</view>
+            </action>
+        </actions>
+    </webwork1>
+    <ao key="ao-entities">
+        <entity>com.reminder.jira.plugin.model.Reminder</entity>
+    </ao>
+    <keyboard-shortcut key="reminder-date" i18n-name="reminder.jira.keyboard.shortcut.date.name" name="Reminder Date" state="enabled">
+        <order>80</order>
+        <description key="reminder.jira.keyboard.shortcut.date.desc">Opens the
+            IssueReminder Dialog
+        </description>
+        <shortcut>r</shortcut>
+        <operation type="click">#reminder-operation</operation>
+        <context>global</context>
+    </keyboard-shortcut>
+    <jql-function key="reminder-search-function" name="Reminder Search Function" i18n-name-key="reminder.jira.search.jql.name" class="com.reminder.jira.plugin.jql.SearchJqlFunction">
+        <descripion key="reminder.jira.search.jql.description"/>
+        <fname>reminder</fname>
+        <list>true</list>
+    </jql-function>
+    <servlet name="MyReminders Servlet" key="MyRemindersServlet" class="com.reminder.jira.plugin.servlet.MyRemindersServlet">
+        <description>My Reminders Servlet</description>
+        <url-pattern>/myreminders</url-pattern>
+    </servlet>
+    <servlet name="ManageReminders Servlet" key="ManageRemindersServlet" class="com.reminder.jira.plugin.servlet.ManageRemindersServlet">
+        <description>Manage Reminders Servlet</description>
+        <url-pattern>/manageReminders</url-pattern>
+    </servlet>
+</atlassian-plugin>

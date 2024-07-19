@@ -1,0 +1,90 @@
+.add-new-reminder-button {
+    font-size: 12px;
+  }
+
+  .add-new-reminder {
+    margin-bottom: 20px;
+  }
+
+  .reminder-date{
+    margin-bottom: 20px;
+    margin-left: -100px; !important;
+  }
+
+  .reminder-additional-recipients {
+    margin-bottom: 20px;
+  }
+
+  .reminder-settings-form #offset {
+    text-align: right;
+  }
+
+  #reminderdate-panel .reminder-again-trigger {
+    float: right;
+    margin-top: -5px;
+  }
+
+  #reminderdate-panel #reminderdate-panel-date {
+    float: left;
+  }
+
+  #reminderdate-panel #delete-reminder {
+    margin-left: 7px;
+  }
+
+  .content-container #reminderdate-panel ul.item-details dl dt {
+    margin-right: 0.166em;
+    text-align: left;
+    width: auto;
+  }
+
+  .content-container #reminderdate-panel ul.item-details dl dd {
+    display: inline;
+    float: none;
+    width: auto;
+  }
+
+  .ui-timepicker-container {
+    z-index: 50000 !important;
+  }
+
+  #remindertime{
+      width: 90px;
+      margin-left: 10px;
+  }
+
+  .reminder-block {
+    border-bottom: 1px solid silver;
+  }
+
+  .reminder-text iframe {
+    height: 140px !important;
+  }
+
+  #aui-message-bar{
+    max-width: 45%;
+    min-width: 400px;
+    right: 0;
+    margin-top: 10px;
+    z-index: 5;
+  }
+
+  .reminderError {
+    color: red;
+    background-color: #ffeff1;
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .reminderWarning {
+    padding: 10px;
+    margin-top: 10px;
+    color: #333333;
+    background-color: #FFEFAA;
+    /*font-weight: bold;*/
+  }
+
+  .small-description{
+    font-size: 10px;
+    color: #989898;
+  }
